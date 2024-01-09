@@ -44,9 +44,9 @@ class Grade(Base):
     student = relationship('Student')
 
 
-@event.listens_for(Grade, "before_update")
-def update_updated_at(mapper, conn, target):
-    target.updated_at = func.now()
+# @event.listens_for(Grade, "before_update")
+# def update_updated_at(mapper, conn, target):
+#     target.updated_at = func.now()
 
 
 Base.metadata.create_all(engine)
