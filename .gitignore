@@ -1,0 +1,14 @@
+__pycache__
+.git
+virtemv/
+venv/
+README*
+pyvenv.cfg
+pipfile*
+poetry.lock
+test.py
+log.csv
+client.py
+zzz.py
+update.py
+delete.py
