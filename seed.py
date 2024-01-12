@@ -1,12 +1,12 @@
 
-import faker
-import sqlite3
-from pprint import pprint
+from faker import Faker
+from db import session, engine
+from models import Student, Teacher, Grade, Group, Discipline
 from random import randint
 from datetime import datetime, date, timedelta
 
 
-NUMBER_STUDENTS = 100
+NUMBER_STUDENTS = 200
 NUMBER_TEACHERS = 5
 NUMBER_GROUPS = 3
 NUMBER_DISCIPLINES = 7
@@ -29,37 +29,51 @@ groups = [
 ]
 
 
-fake = faker.Faker()
-connect = sqlite3.connect("hw6.db")
-cur = connect.cursor()
+fake = Faker()
 
 
 def seed_teachers():
-    teachers = [fake.name() for _ in range(NUMBER_TEACHERS)]
-    sql = "INSERT INTO teachers(teacher_name) VALUES(?);"
-    cur.executemany(sql, zip(teachers, ))
-
-
-def seed_disciplines():
-    sql = "INSERT INTO disciplines (discipline_name, teacher_id) VALUES(?, ?);"
-    cur.executemany(sql, zip(disciplines, iter(randint(1, NUMBER_TEACHERS) for _ in range(len(disciplines)))))
+    for _ in range(NUMBER_TEACHERS):
+        teacher = Teacher(
+            name = fake.name()
+        )
+        session.add(teacher)
+    session.commit()
 
 
 def seed_groups():
-    sql = "INSERT INTO groups(group_name) VALUES(?);"
-    cur.executemany(sql, zip(groups, ))
+    for i in groups:
+        group = Group(
+            name = i
+        )
+        session.add(group)
+    session.commit()
 
 
 def seed_students():
     students = [fake.name() for _ in range(NUMBER_STUDENTS)]
-    sql = "INSERT INTO students(student_name, group_id) VALUES(?, ?);"
-    cur.executemany(sql, zip(students, iter(randint(1, NUMBER_GROUPS) for _ in range(len(students)))))
+    for i in students:
+        student = Student(
+            name = i,
+            group_id=randint(1, NUMBER_GROUPS)
+        )
+        session.add(student)
+    session.commit()
+
+
+def seed_disciplines():
+    for i in  disciplines:
+        discipline = Discipline(
+            name=i,
+            teacher_id=randint(1, NUMBER_TEACHERS)
+        )
+        session.add(discipline )
+    session.commit()
 
 
 def seed_grades():
     start_date = datetime.strptime("2022-09-01", "%Y-%m-%d")
     end_date =  datetime.strptime("2023-05-25", "%Y-%m-%d")
-    sql = "INSERT INTO grades(discipline_id, student_id, grade, date_off) VALUES(?, ?, ?, ?);"
 
     def get_dates(start:date, end:date):
         result = []
@@ -75,22 +89,25 @@ def seed_grades():
     for day in list_dates:
         random_discipline = randint(1,len(disciplines))
         random_students = [ randint(1, NUMBER_STUDENTS) for _ in range(20) ]
-        for students in random_students :
-            grades.append((random_discipline, students, randint(1,12), day.date()  ))
-    cur.executemany(sql, grades )
-
+        for student in random_students :
+            grade= Grade(
+                discipline_id=randint(1, NUMBER_DISCIPLINES),
+                student_id=student,
+                grade=randint(2,12),
+                date_off=day,
+            )
+            session.add(grade)
+    session.commit()
 
 
 if __name__ == '__main__':
     try:
+        seed_groups()
         seed_teachers()
         seed_disciplines()
-        seed_groups()
         seed_students()
         seed_grades()
-
-        connect.commit()
-    except sqlite3.Error as e :
-        pprint(e)
+    except :
+        print("error")
     finally:
-        connect.close()
+        session.close()
