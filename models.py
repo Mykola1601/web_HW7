@@ -1,36 +1,37 @@
 
 from db import engine
-from sqlalchemy.orm import  DeclarativeBase, relationship
-from sqlalchemy import Column, String, Integer, Text, ForeignKey, DateTime, func, event
+from sqlalchemy.orm import  declarative_base, relationship
+from sqlalchemy import Column, String, Integer, Text, ForeignKey, Date, func
 from sqlalchemy.ext.hybrid import hybrid_property
 
-class Base(DeclarativeBase):
-    pass
+# class Base(DeclarativeBase):
+#     pass
+Base = declarative_base()
 
 
 class Group(Base):
     __tablename__ = 'groups'
     id = Column(Integer(), primary_key=True)
-    name = Column(String(100), unique = True)
+    name = Column(String(100), unique = True, nullable = False)
 
 
 class Teacher(Base):
     __tablename__ = 'teachers'
     id = Column(Integer(), primary_key=True)
-    name = Column(String(100))
+    name = Column(String(100), nullable = False)
 
 
 class Student(Base):
     __tablename__ = 'students'
     id = Column(Integer(), primary_key=True)
-    name = Column(String(100))
+    name = Column(String(100), nullable = False)
     group_id = Column('group_id',Integer, ForeignKey('groups.id'))
     # discipline = relationship('Discipline')
 
 class Discipline(Base):
     __tablename__ = 'disciplines'
     id = Column(Integer(), primary_key=True)
-    name = Column(String(100))
+    name = Column(String(100), nullable = False)
     teacher_id = Column('teacher_id',Integer, ForeignKey('teachers.id'))
     # teacher = relationship('Teacher')
 
@@ -41,7 +42,7 @@ class Grade(Base):
     discipline_id = Column( 'discipline_id',Integer, ForeignKey('disciplines.id'))
     student_id = Column( 'student_id',Integer, ForeignKey('students.id'))
     grade = Column("grade", Integer())
-    date_off = Column(DateTime)
+    date_off = Column(Date, nullable = False)
     # create_at = Column(DateTime, default = func.now())
     # updated_at = Column(DateTime, default = func.now())
     student = relationship('Student')

@@ -94,7 +94,7 @@ def seed_grades():
                 discipline_id=randint(1, NUMBER_DISCIPLINES),
                 student_id=student,
                 grade=randint(2,12),
-                date_off=day,
+                date_off=day.date() ,
             )
             session.add(grade)
     session.commit()
