@@ -12,7 +12,7 @@ Base = declarative_base()
 class Group(Base):
     __tablename__ = 'groups'
     id = Column(Integer(), primary_key=True)
-    name = Column(String(100), unique = True, nullable = False)
+    name = Column(String(100),  nullable = False)
 
 
 class Teacher(Base):
@@ -25,28 +25,26 @@ class Student(Base):
     __tablename__ = 'students'
     id = Column(Integer(), primary_key=True)
     name = Column(String(100), nullable = False)
-    group_id = Column('group_id',Integer, ForeignKey('groups.id'))
-    # discipline = relationship('Discipline')
+    group_id = Column('group_id', ForeignKey('groups.id', ondelete = 'CASCADE'))
+    group = relationship('Group', backref = "students")
 
 class Discipline(Base):
     __tablename__ = 'disciplines'
     id = Column(Integer(), primary_key=True)
     name = Column(String(100), nullable = False)
-    teacher_id = Column('teacher_id',Integer, ForeignKey('teachers.id'))
-    # teacher = relationship('Teacher')
+    teacher_id = Column('teacher_id', ForeignKey('teachers.id', ondelete = 'CASCADE'))
+    teacher = relationship('Teacher' , backref = "disciplines")
 
 
 class Grade(Base):
     __tablename__ = 'grades'
     id = Column(Integer(), primary_key=True)
-    discipline_id = Column( 'discipline_id',Integer, ForeignKey('disciplines.id'))
-    student_id = Column( 'student_id',Integer, ForeignKey('students.id'))
     grade = Column("grade", Integer())
+    discipline_id = Column( 'discipline_id',Integer, ForeignKey('disciplines.id', ondelete = 'CASCADE'))
+    student_id = Column( 'student_id',Integer, ForeignKey('students.id', ondelete = 'CASCADE'))
     date_off = Column(Date, nullable = False)
-    # create_at = Column(DateTime, default = func.now())
-    # updated_at = Column(DateTime, default = func.now())
-    student = relationship('Student')
-    discipline = relationship('Discipline')
+    student = relationship('Student', backref = "grade")
+    discipline = relationship('Discipline', backref = "grade")
 
 
 # @event.listens_for(Grade, "before_update")

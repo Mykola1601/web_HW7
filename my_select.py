@@ -1,22 +1,4 @@
-'''Реалізуйте свої моделі SQLAlchemy, для таблиць:
-
-Таблиця студентів;
-Таблиця груп;
-Таблиця викладачів;
-Таблиця предметів із вказівкою викладача, який читає предмет;
-Таблиця де кожен студент має оцінки з предметів із зазначенням коли оцінку отримано;
-Другий крок
-Використовуйте alembic для створення міграцій у базі даних.
-
-Третій крок
-Напишіть скрипт seed.py та заповніть отриману базу даних
- випадковими даними (~30-50 студентів, 3 групи, 5-8 предметів, 
- 3-5 викладачів, до 20 оцінок у кожного студента з усіх предметів).
-  Використовуйте пакет Faker для наповнення. При заповненні
-   використовуємо механізм сесій SQLAlchemy.
-
-Четвертий крок
-Зробити такі вибірки з отриманої бази даних:
+'''
 
 Знайти 5 студентів із найбільшим середнім балом з усіх предметів.
 Знайти студента із найвищим середнім балом з певного предмета.
@@ -90,43 +72,89 @@ INFO
 
 
 
-from db import session  #, engine
+from db import session  
 from models import Student, Teacher, Grade, Group, Discipline
-from sqlalchemy import select
+from sqlalchemy import select, func, desc
 from pprint import pprint
 
+
 def select_1():
-   ...
+   result = session.query(Student.name, func.round(func.avg(Grade.grade), 2).label('avg_grade') )\
+      .select_from(Grade).join(Student).group_by(Student.id).order_by(desc('avg_grade')) .limit(5).all()
+   return result
+
+
+
+def select_2(discipline_id):
+   res = session.query(
+      Discipline.name,
+      Student.name,
+      func.round(func.avg(Grade.grade), 2).label("avg_grade") ) \
+         .select_from(Grade)\
+         .join(Student).join(Discipline)\
+         .filter(Discipline.id == discipline_id)\
+         .group_by(Student.name, Discipline.name)\
+         .order_by(desc("avg_grade"))\
+         .limit(1).all()
+   return res
 
 
 
 
-def select_2():
-   ...
-
-
-
-
-def select_3():
-   ...
+def select_3(discipline_id):
+   res = session.query(
+      Group.name,
+      Discipline.name,
+      func.round(func.avg(Grade.grade), 2).label("avg_grade") ) \
+         .select_from(Grade)\
+         .join(Student)\
+         .join(Discipline)\
+         .join(Group)\
+         .filter(Discipline.id == discipline_id)\
+         .group_by(Group.name, Discipline.name)\
+         .order_by(desc("avg_grade"))\
+         .all()
+   return res
 
 
 
 
 def select_4():
-   ...
+   res = session.query(
+      func.round(func.avg(Grade.grade), 2).label("avg_grade") ) \
+         .select_from(Grade)\
+         .all()
+   return res
 
 
 
 
-def select_5():
-   ...
+def select_5(teacher_id):
+   res = session.query(
+      Teacher.name,
+      Discipline.name ) \
+         .select_from(Grade)\
+         .join(Student)\
+         .join(Discipline)\
+         .join(Group)\
+         .join(Teacher)\
+         .filter(Teacher.id == teacher_id)\
+         .group_by(Teacher.name, Discipline.name)\
+         .all()
+   return res
 
 
 
 
-def select_6():
-   ...
+def select_6(group_id):
+   res = session.query(
+      Student.name,
+      Group.name ) \
+         .select_from(Student)\
+         .join(Group)\
+         .filter(Group.id == group_id)\
+         .all()
+   return res
 
 
 
@@ -153,16 +181,46 @@ def select_10():
    ...
 
 
+def select_11(discipline_id, group_id):
+   subquery =session.query(Grade.date_off)  (select(func.max(Grade.date_off)).join(Student).join(Group).where(
+      (Grade.discipline_id == discipline_id) and (Group.group_id == group_id) 
+      ).order_by(desc(Grade.date_off)).limit(1).scalar_subquery() )
+   return subquery
 
+
+def select_12(discipline_id, group_id):
+   subquery = ( select(func.max(Grade.date_off)).join(Student).join(Group).where(
+      (Grade.discipline_id == discipline_id) and (Group.group_id == group_id) 
+      ).order_by(desc(Grade.date_off)).limit(1).scalar_subquery() )
+
+   res = session.query(
+      Discipline.name,
+      Group.name,
+      Student.name,
+      Grade.grade,
+      Grade.date_off ) \
+         .select_from(Grade)\
+         .join(Student).join(Discipline).join(Group)\
+         .filter(( (Discipline.id == discipline_id) and (Group.id == group_id) and (Grade.date_off == subquery)))\
+         .order_by(Grade.date_off)\
+         .all()
+          
+
+   return res
 
 
 
 if __name__ == '__main__':
 
-   q = session.execute(
-      select(Student.id, Student.name, Discipline.name,  Grade.grade)
-      # .join(Grade)
-      .join(Student)
-         ).mappings().all()
-
-   pprint(q)
+   # pprint(select_1())
+   # pprint(select_2(1))
+   # pprint(select_3(3))
+   # pprint(select_4())
+   # pprint(select_5(1))
+   pprint(select_6(3))
+   # pprint(select_7(3))
+   # pprint(select_8(3))
+   # pprint(select_9(3))
+   # pprint(select_10(3))
+   # pprint(select_11(3))
+   # pprint(select_12(3))

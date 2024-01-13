@@ -1,9 +1,9 @@
 
 from faker import Faker
-from db import session, engine
-from models import Student, Teacher, Grade, Group, Discipline
-from random import randint
+from db import session
+from random import randint, choice
 from datetime import datetime, date, timedelta
+from models import Student, Teacher, Grade, Group, Discipline
 
 
 NUMBER_STUDENTS = 200
