@@ -4,8 +4,7 @@ from sqlalchemy.orm import  declarative_base, relationship
 from sqlalchemy import Column, String, Integer, Text, ForeignKey, Date, func
 from sqlalchemy.ext.hybrid import hybrid_property
 
-# class Base(DeclarativeBase):
-#     pass
+
 Base = declarative_base()
 
 
